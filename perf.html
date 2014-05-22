@@ -1,0 +1,573 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>性能测试报告</title>
+    <script src="http://g.tbcdn.cn/kissy/k/1.4.0/seed-min.js"></script>
+<style type="text/css">    
+body {
+ background-color: #EEEEEE;  
+}                              
+p.serif{font-family:"Times New Roman",Georgia,Serif}
+p.sansserif{font-family:Arial,Verdana,Sans-serif} 
+       
+</style>                      
+	
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+		<script type="text/javascript">
+		
+        var run_stamp0 = 20140522154031;		
+		var href = location.href;
+		var m, run_stamp;
+		
+		m = href.match(/stamp=(\d+)/);
+		if(!m) run_stamp = run_stamp0;
+		else run_stamp = m[1];
+ 
+		$.ajax({
+        url : 'http://10.125.1.58:8888/ReportServlet/csv?run_stamp='+run_stamp, //请求地址
+        type : 'GET', //POST或GET请求
+        data : {
+                siteName : "http://10.125.1.58:8888" //参数 JSON格式 如果是GET请求可以直接在URL里写
+        },
+        dataType : 'jsonp',//json 或者 jsonp 默认是html
+        timeout : 10000,
+        error : function() {
+                alert('Time out loading : http://10.125.1.58:8888/ReportServlet/csv?run_stamp='+run_stamp);
+        },
+        success : function(JSON) {
+		/* basic_info */	
+		var content="";
+		content += "应用程序名:<strong>"+JSON.result[0].app_name[0]+"</strong><br>";
+		content += "应用包名:<strong>"+JSON.result[0].package_name[0]+"</strong><br>";
+		content += "应用PID:<strong>"+JSON.result[0].pid[0]+"</strong><br>";
+		content += "应用UID:<strong>"+JSON.result[0].uid[0]+"</strong><br>";
+		content += "内存大小(MB):<strong>"+JSON.result[0].mem[0]+"</strong><br>";
+		content += "CPU型号:<strong>"+JSON.result[0].cpu_type[0]+"</strong><br>";
+		content += "系统版本:<strong>"+JSON.result[0].sys_version[0]+"</strong><br>";
+		content += "手机型号:<strong>"+JSON.result[0].mobile_type[0]+"</strong><br>";
+		
+		content += "启动时间:<strong>"+JSON.result[0].start_time[0]+"</strong><br>";
+		
+		$("#basic_info").each(function(){
+			$(this).html(content);
+		});
+		
+		
+		
+		
+		/* charts */
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var pss=[];
+		/*
+		series: [{
+                name: 'Tokyo',
+                data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6]
+            }, {
+                name: 'New York',
+                data: [-0.2, 0.8, 5.7, 11.3, 17.0, 22.0, 24.8, 24.1, 20.1, 14.1, 8.6, 2.5]
+            }, {
+                name: 'Berlin',
+                data: [-0.9, 0.6, 3.5, 8.4, 13.5, 17.0, 18.6, 17.9, 14.3, 9.0, 3.9, 1.0]
+            }, {
+                name: 'London',
+                data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+            }]
+		*/
+			var SIZE = JSON.result[0].pss.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].pss[j]);
+			}
+			var item={}; 
+			item.name = 'pss';
+			item.data = y
+			pss.push(item);
+ 		     		   
+			$('#container_pss').highcharts({
+            title: {
+                text: '应用占用内存PSS(MB)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: 'PSS(MB)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '应用占用内存PSS(MB)'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: pss
+        });
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var mem_ratio=[];
+		
+			var SIZE = JSON.result[0].mem_ratio.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].mem_ratio[j]);
+			}
+			var item={}; 
+			item.name = 'mem_ratio';
+			item.data = y
+			mem_ratio.push(item);
+ 		     		   
+			$('#container_mem_ratio').highcharts({
+            title: {
+                text: '应用占用内存比(%)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '应用占用内存比（%）'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '应用占用内存比（%）'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: mem_ratio
+        });
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var cpu_ratio=[];
+		
+			var SIZE = JSON.result[0].cpu_ratio.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].cpu_ratio[j]);
+			}
+			var item={}; 
+			item.name = 'cpu_ratio';
+			item.data = y
+			cpu_ratio.push(item);
+ 		     		   
+			$('#container_cpu_ratio').highcharts({
+            title: {
+                text: '应用占用CPU率(%)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '应用占用CPU率（%）'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '应用占用CPU率%'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: cpu_ratio
+        });
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var ttl_cpu_ratio=[];
+		
+			var SIZE = JSON.result[0].ttl_cpu_ratio.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].ttl_cpu_ratio[j]);
+			}
+			var item={}; 
+			item.name = 'ttl_cpu_ratio';
+			item.data = y
+			ttl_cpu_ratio.push(item);
+ 		     		   
+			$('#container_ttl_cpu_ratio').highcharts({
+            title: {
+                text: 'CPU总使用率(%)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: 'CPU总使用率(%)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: 'CPU总使用率%'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: ttl_cpu_ratio
+        });
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var mem_free=[];
+		
+			var SIZE = JSON.result[0].mem_free.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].mem_free[j]);
+			}
+			var item={}; 
+			item.name = 'mem_free';
+			item.data = y
+			mem_free.push(item);
+ 		     		   
+			$('#container_mem_free').highcharts({
+            title: {
+                text: '剩余内存(MB)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '剩余内存(MB)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: 'MB'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: mem_free
+        });
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var traffic=[];
+		
+			var SIZE = JSON.result[0].traffic.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].traffic[j]);
+			}
+			var item={}; 
+			item.name = 'traffic';
+			item.data = y
+			traffic.push(item);
+ 		     		   
+			$('#container_traffic').highcharts({
+            title: {
+                text: '流量(KB)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '流量(KB)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '流量(KB)'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: traffic
+        });
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var battery=[];
+		
+			var SIZE = JSON.result[0].battery.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].battery[j]);
+			}
+			var item={}; 
+			item.name = 'battery';
+			item.data = y
+			battery.push(item);
+ 		     		   
+			$('#container_battery').highcharts({
+            title: {
+                text: '电量(%)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '电量(%)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '电量(%)'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: battery
+        });
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var current=[];
+		
+			var SIZE = JSON.result[0].current.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].current[j]);
+			}
+			var item={}; 
+			item.name = 'current';
+			item.data = y
+			current.push(item);
+ 		     		   
+			$('#container_current').highcharts({
+            title: {
+                text: '电流(mA)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '电流(mA)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '电流(mA)'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: current
+        });
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var voltage=[];
+		
+			var SIZE = JSON.result[0].voltage.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].voltage[j]);
+			}
+			var item={}; 
+			item.name = 'voltage';
+			item.data = y
+			voltage.push(item);
+ 		     		   
+			$('#container_voltage').highcharts({
+            title: {
+                text: '电压(V)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '电压(V)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '电压(V)'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: voltage
+        });
+		
+		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		var temperature=[];
+		
+			var SIZE = JSON.result[0].temperature.length;
+			var y = new Array(SIZE);
+			for(j=0; j<SIZE; j++){
+			   y[j]=parseInt(JSON.result[0].temperature[j]);
+			}
+			var item={}; 
+			item.name = 'temperature';
+			item.data = y
+			temperature.push(item);
+ 		     		   
+			$('#container_temperature').highcharts({
+            title: {
+                text: '温度(C)',   
+            },
+            xAxis: {
+				labels: {
+					enabled: false
+				}
+			},				
+            yAxis: {
+				min: 0,
+                title: {
+                    text: '温度(C)'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+                valueSuffix: '温度(C)'
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0
+            },
+            series: temperature
+        });
+	/*********************************************************************************************/
+	}});
+		//////////////////////////////////////////////////////////////////////////////////////////////
+		 
+  
+		</script>
+		
+		<script src="js/highcharts.js"></script>
+		<script src="js/modules/data.js"></script>
+		<script src="js/modules/exporting.js"></script>	
+	
+</head>
+
+<body class="serif">
+    <br><br><br>
+	<h2 align="center"style=font-family:微软雅黑>Android应用性能测试报告</h2>
+	
+	          <p align="right">
+                <label for="issue_issue_author_id">联系人:陈光剑</label>
+                 <a href="http://www.taobao.com/webww/ww.php?ver=3&amp;touid=universsky1&amp;siteid=cntaobao&amp;status=2&amp;charset=utf-8" class="inline-item" target="_blank" title="universsky1"><img alt="universsky1" border="0" src="http://amos.alicdn.com/realonline.aw?v=2&amp;uid=universsky1&amp;site=cntaobao&amp;s=2&amp;charset=utf-8" /></a><a href="http://amos.alicdn.com/msg.aw?v=2&amp;uid=universsky1&amp;site=cnalichn&amp;s=11&amp;charset=UTF-8" class="inline-item" target="_blank" title="universsky1"></a>
+              </p>
+	
+	<div id=time align="right" style=font-family:Verdana></div>
+    <script>setInterval("time.innerHTML='今天是'+new Date().toLocaleString()+' 星期'+'日一二三四五六'.charAt(new Date().getDay())+' ';",1000);</script>
+    	
+	<div id="basic_info"></div>
+	 
+	<div id="container_pss" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_mem_ratio" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_cpu_ratio" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_ttl_cpu_ratio" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_mem_free" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_traffic" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_battery" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_current" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_voltage" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	<div id="container_temperature" style="min-width: 100px; height: 200px; margin: 0 auto"></div>
+	<br>
+	
+	
+	<div id="download_img" align="center" ><a href="http://10.125.1.58:88/apk/Emmagee.apk"><img src="http://10.125.1.58:88/apk/qrcode.png"></img></a></div>
+	<div id="download" align="center" ><a href="http://10.125.1.58:88/apk/Emmagee.apk">性能测试工具Emmagee下载</a></div>
+
+</body>
+</html>
